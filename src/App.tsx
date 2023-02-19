@@ -53,8 +53,6 @@ function App() {
     setUserExpiry(expiry);
     setTokensPerDay(tpd);
     setMinDaysPurchased(mdp);
-
-    console.log("bal", bal);
   }, [door3Contract, signer, tokenContract]);
 
   const getContratsAndInfo = useCallback(async () => {
@@ -230,8 +228,30 @@ function App() {
 
                     try {
                       const signature = await signer.signMessage(payload);
-                      console.log("signature", payload, signature);
-                    } catch (e) {}
+                      enqueueSnackbar("Opening door", { variant: "info" });
+                      const resp = await fetch(
+                        `https://api-door3.dctrl.wtf/members/open`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            payload,
+                            signature,
+                          }),
+                        }
+                      ).then((x) => x.json());
+                      if (resp.error) {
+                        enqueueSnackbar("Cannot open door", {
+                          variant: "error",
+                        });
+                      } else {
+                        enqueueSnackbar("Door opened", { variant: "success" });
+                      }
+                    } catch (e) {
+                      enqueueSnackbar("Cannot open door", { variant: "error" });
+                    }
                     setIsOpening(false);
                   }}
                   style={{ marginTop: "10px" }}
