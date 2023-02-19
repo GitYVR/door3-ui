@@ -1,7 +1,7 @@
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import { useCallback, useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
-import { useSigner } from "wagmi";
+import { useSigner, useNetwork } from "wagmi";
 
 import { Grid, Typography, Button, LinearProgress } from "@mui/material";
 import { BigNumber, Contract, ethers } from "ethers";
@@ -17,6 +17,7 @@ const isEpochPassed = (t: number) => {
 
 function App() {
   const { data: signer } = useSigner();
+  const { chain } = useNetwork();
   const { enqueueSnackbar } = useSnackbar();
 
   const [tokenName, setTokenName] = useState<null | string>(null);
@@ -105,14 +106,23 @@ function App() {
             (signer === null && (
               <Typography variant="h5">Please connect your wallet</Typography>
             ))}
-          {signer !== undefined && signer !== null && userExpiry === null && (
-            <>
+          {signer !== undefined &&
+            signer !== null &&
+            userExpiry === null &&
+            (chain === null ||
+            chain === undefined ||
+            (chain && chain.id !== 137) ? (
               <Typography variant="h5">
-                Retrieving Door3 membership status
+                Unsupported chain, please change to Polygon Network
               </Typography>
-              <LinearProgress style={{ marginTop: "10px" }} />
-            </>
-          )}
+            ) : (
+              <>
+                <Typography variant="h5">
+                  Retrieving Door3 membership status
+                </Typography>
+                <LinearProgress style={{ marginTop: "10px" }} />
+              </>
+            ))}
           {signer !== undefined && signer !== null && userExpiry !== null && (
             <>
               <Typography variant="h5">
